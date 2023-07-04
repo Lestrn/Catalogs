@@ -14,7 +14,7 @@ namespace Catalogs.Services
             _catalogRepository = entityRepository;
             _dataRepository = dataRepository;
         }
-        public Task<CatalogeDTO> GetCatalogDTOFromRoute(string route)
+        public Task<CatalogDTO> GetCatalogDTOFromRoute(string route)
         {
             var catalogWithData = _catalogRepository.Context.Catalog.Where(ctg => ctg.CatalogRoute == route).Join(_catalogRepository.Context.Data, ctg => ctg.Id, data => data.IdOfCatalog, (ctg, data) => new
             {
@@ -40,33 +40,26 @@ namespace Catalogs.Services
                 ctgDataName.Add(data.DataName);
                 ctgDataRoute.Add(data.DataRoute);
             }
-            CatalogeDTO catalogDTO = new CatalogeDTO() {Id = id, CatalogName = ctgName, CatalogRoute = ctgRoute, DataName = ctgDataName, DataRoute = ctgDataRoute };
+            CatalogDTO catalogDTO = new CatalogDTO() {Id = id, CatalogName = ctgName, CatalogRoute = ctgRoute, DataName = ctgDataName, DataRoute = ctgDataRoute };
             return Task.FromResult(catalogDTO);
         }
         public async Task<bool> AddCatalog(string currentRoute, string catalogName)
         {
-            var catalog = await GetCatalogDTOFromRoute(currentRoute);
             var catalogWithoutJoins = (await _catalogRepository.Where(ctg => ctg.CatalogRoute == currentRoute)).FirstOrDefault();
             if(catalogWithoutJoins == null)
             {
                 return false;
             }
+
             #region Check if there is already catalog with the same name, if so dont add and return false
-            var catalogWithData = _catalogRepository.Context.Catalog.Where(ctg => ctg.CatalogRoute == currentRoute).Join(_catalogRepository.Context.Data, ctg => ctg.Id, data => data.IdOfCatalog, (ctg, data) => new
-            {
-                DataName = data.DataOfCatalog.CatalogName
-            });
-
+            var catalog = await GetCatalogDTOFromRoute(currentRoute);
             List<string> routNamesInCatalog = new List<string>();
-            foreach (var data in catalogWithData)
-            {
-                routNamesInCatalog.Add(data.DataName);
-            }
-
+            routNamesInCatalog = catalog.DataName;
             if(routNamesInCatalog.Contains(catalogName))
             {
                 return false;
             }
+
             #endregion
      
             CatalogModel newCatalog = new CatalogModel { CatalogName = catalogName, CatalogRoute = $"{currentRoute}\\{catalogName}" };

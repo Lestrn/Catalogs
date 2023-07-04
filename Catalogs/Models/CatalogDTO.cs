@@ -1,6 +1,6 @@
 ﻿namespace Catalogs.Models
 {
-    public class CatalogeDTO
+    public class CatalogDTO
     {
         public Guid Id { get; set; }
         public string CatalogName { get; set; }
