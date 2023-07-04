@@ -14,7 +14,7 @@ namespace Catalogs.Services
             _catalogRepository = entityRepository;
             _dataRepository = dataRepository;
         }
-        public Task<CatalogDTO> GetCatalogDTOFromRoute(string route)
+        public async Task<CatalogDTO?> GetCatalogDTOFromRoute(string route)
         {
             var catalogWithData = _catalogRepository.Context.Catalog.Where(ctg => ctg.CatalogRoute == route).Join(_catalogRepository.Context.Data, ctg => ctg.Id, data => data.IdOfCatalog, (ctg, data) => new
             {
@@ -24,15 +24,6 @@ namespace Catalogs.Services
                 DataName = data.DataOfCatalog.CatalogName,
                 DataRoute = data.DataOfCatalog.CatalogRoute
             });
-            string ctgRoute = "", ctgName = "";
-            Guid id = Guid.Empty;
-            foreach (var data in catalogWithData)
-            {
-                id = data.CatalogId;
-                ctgRoute = data.CatalogRoute;
-                ctgName = data.CatalogName;
-                break;
-            }
             List<string> ctgDataName = new List<string>();
             List<string> ctgDataRoute = new List<string>();
             foreach (var data in catalogWithData)
@@ -40,17 +31,16 @@ namespace Catalogs.Services
                 ctgDataName.Add(data.DataName);
                 ctgDataRoute.Add(data.DataRoute);
             }
-            CatalogDTO catalogDTO = new CatalogDTO() {Id = id, CatalogName = ctgName, CatalogRoute = ctgRoute, DataName = ctgDataName, DataRoute = ctgDataRoute };
-            return Task.FromResult(catalogDTO);
+            var catalogeWithoutData = (await _catalogRepository.Where(ctg => ctg.CatalogRoute == route)).FirstOrDefault();
+            if (catalogeWithoutData == null)
+            {
+                return null;
+            }
+            CatalogDTO catalogDTO = new CatalogDTO() {Id = catalogeWithoutData.Id, CatalogName = catalogeWithoutData.CatalogName, CatalogRoute = catalogeWithoutData.CatalogRoute, DataName = ctgDataName, DataRoute = ctgDataRoute };
+            return catalogDTO;
         }
         public async Task<bool> AddCatalog(string currentRoute, string catalogName)
         {
-            var catalogWithoutJoins = (await _catalogRepository.Where(ctg => ctg.CatalogRoute == currentRoute)).FirstOrDefault();
-            if(catalogWithoutJoins == null)
-            {
-                return false;
-            }
-
             #region Check if there is already catalog with the same name, if so dont add and return false
             var catalog = await GetCatalogDTOFromRoute(currentRoute);
             List<string> routNamesInCatalog = new List<string>();
@@ -63,7 +53,7 @@ namespace Catalogs.Services
             #endregion
      
             CatalogModel newCatalog = new CatalogModel { CatalogName = catalogName, CatalogRoute = $"{currentRoute}\\{catalogName}" };
-            CatalogDataModel newData = new CatalogDataModel { DataOfCatalog = newCatalog, IdOfCatalog = catalogWithoutJoins.Id };
+            CatalogDataModel newData = new CatalogDataModel { DataOfCatalog = newCatalog, IdOfCatalog = catalog.Id };
             await _catalogRepository.AddAsync(newCatalog);
             await _dataRepository.AddAsync(newData);
             await _catalogRepository.SaveChangesAsync();
