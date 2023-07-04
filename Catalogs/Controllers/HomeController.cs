@@ -16,7 +16,7 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index(string route = "")
     {
-        CatalogeDTO catalogModel = await _catalogService.GetCatalogDTOFromRoute(route);
+        CatalogDTO catalogModel = await _catalogService.GetCatalogDTOFromRoute(route);
         return View(catalogModel);
     }
    
