@@ -1,0 +1,20 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+@model CatalogeDTO
+
+<div class="text-center">
+    <p>Current catalog: @Model.CatalogeName</p>
+
+    @{
+        for (int i = 0;  i < Model.DataName.Count; i++)
+        {
+            <form method="post" asp-controller="Home" asp-action="Index">
+                <a href="@Url.Action("Index", "Home", new{route = Model.DataRoute[i]})">@Model.DataName[i]</a>
+            </form>
+        }
+    }
+    <form method="post" asp-controller="Home" asp-action="FillWithDefaultCatalogs">
+        <button>Fill with default values</button>
+    </form>
+</div>
