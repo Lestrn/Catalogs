@@ -9,5 +9,6 @@ namespace Catalogs.Interfaces
         public Task<bool> FillWithDefaultCatalogs();
         public Task<List<CatalogModel>> GetCatalogModels();
         public Task ImportCatalog(IFormFile zipFile);
+        public Task<byte[]> DownloadCatalog(string catalogName);
     }
 }

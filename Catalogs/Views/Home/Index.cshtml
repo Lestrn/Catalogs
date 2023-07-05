@@ -5,12 +5,15 @@
 
 <div class="text-center">
     <p>Current catalog: @Model.CatalogName</p>
-
+    <form method="post" asp-controller="Home" asp-action="DownloadCatalog">
+        <a href="@Url.Action("DownloadCatalog", "Home", new{catalogName = Model.CatalogName})" class="download-link">Download</a>
+    </form>
     @{
         for (int i = 0;  i < Model.DataName.Count; i++)
         {
             <form method="post" asp-controller="Home" asp-action="Index">
                 <a href="@Url.Action("Index", "Home", new{route = Model.DataRoute[i]})">@Model.DataName[i]</a>
+
             </form>
         }
     }
@@ -23,3 +26,21 @@
         <input type="submit" value="Upload" />
     </form>
 </div>
+<style>
+    .download-link {
+        color: blue;
+        text-decoration: none;
+        font-weight: bold;
+        background-color: lightblue;
+        padding: 10px;
+        border-radius: 4px;
+        display: inline-block;
+        transition: background-color 0.3s ease;
+    }
+
+        .download-link:hover {
+            background-color: cornflowerblue;
+            color: white;
+        }
+
+</style>

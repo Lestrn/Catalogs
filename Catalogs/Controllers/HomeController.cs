@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Catalogs.Models;
 using Catalogs.Interfaces;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Catalogs.Controllers;
 
@@ -17,13 +18,13 @@ public class HomeController : Controller
     public async Task<IActionResult> Index(string route = "")
     {
         CatalogDTO? catalogModel = await _catalogService.GetCatalogDTOFromRoute(route);
-        if(catalogModel == null)
+        if (catalogModel == null)
         {
             return RedirectToAction("Index", "Home");
         }
         return View(catalogModel);
     }
-   
+
     public async Task<IActionResult> FillWithDefaultCatalogs()
     {
         await _catalogService.FillWithDefaultCatalogs();
@@ -35,16 +36,19 @@ public class HomeController : Controller
         {
             await _catalogService.ImportCatalog(zipFile);
         }
-        catch 
+        catch
         {
             return RedirectToAction("Index", "Home");
         }
         return RedirectToAction("Index", "Home");
 
     }
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
+    public async Task<IActionResult> DownloadCatalog(string catalogName)
     {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        if(catalogName.IsNullOrEmpty())
+        {
+            return RedirectToAction("Index", "Home");
+        }
+        return File(await _catalogService.DownloadCatalog(catalogName), "application/zip", $"{catalogName}.zip");
     }
 }

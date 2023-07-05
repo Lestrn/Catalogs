@@ -123,10 +123,43 @@ namespace Catalogs.Services
                     string routeForDb = fileRoute.Substring(extractionPath.Length);
                     await AddCatalog(Directory.GetParent(routeForDb).FullName.Substring(2), Path.GetFileName(routeForDb));
                 }
+
                 // Delete the .zip file and extracted folder
                 System.IO.File.Delete(filePath);
                 Directory.Delete(extractionPath, true);
             }
+        }
+        public async Task<byte[]> DownloadCatalog(string catalogName)
+        {
+            List<CatalogModel> ctgModels = _catalogRepository.Context.Catalog.Where(ctg => ctg.CatalogRoute.StartsWith($"\\{catalogName}")).ToList();
+            // Path to the folder you want to download
+            string downloadsFolder = $"{Directory.GetCurrentDirectory()}\\Downloads";
+            if (!Directory.Exists(downloadsFolder))
+            {
+                Directory.CreateDirectory(downloadsFolder);
+            }
+            string finalCatalogPath = $"{downloadsFolder}\\{catalogName}";
+            Directory.CreateDirectory(finalCatalogPath);
+            foreach (var ctgModel in ctgModels)
+            {
+                string route = $"{downloadsFolder}\\{ctgModel.CatalogRoute}";
+                Directory.CreateDirectory(route);
+            }
+
+            // Generate a unique filename for the ZIP archive
+            string zipFilePath = $"{downloadsFolder}\\{catalogName}.zip";            
+
+            // Create the ZIP archive
+            ZipFile.CreateFromDirectory(finalCatalogPath, zipFilePath, CompressionLevel.Fastest, false);
+
+            // Read the ZIP file contents into a byte array
+            byte[] fileBytes = System.IO.File.ReadAllBytes(zipFilePath);
+
+            // Delete the temporary ZIP file
+            System.IO.File.Delete(zipFilePath);
+
+            // Return the ZIP archive as a downloadable file
+            return fileBytes;
         }
     }
 }
