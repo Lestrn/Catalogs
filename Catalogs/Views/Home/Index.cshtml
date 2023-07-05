@@ -17,4 +17,9 @@
     <form method="post" asp-controller="Home" asp-action="FillWithDefaultCatalogs">
         <button>Fill with default values</button>
     </form>
+    <h3>Upload catalog, please consider using only .zip files</h3>
+    <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="ImportCatalog">
+        <input type="file" name="zipFile" accept=".zip"/>
+        <input type="submit" value="Upload" />
+    </form>
 </div>

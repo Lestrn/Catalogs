@@ -8,5 +8,6 @@ namespace Catalogs.Interfaces
         public Task<bool> AddCatalog(string currentRoute, string catalogName);
         public Task<bool> FillWithDefaultCatalogs();
         public Task<List<CatalogModel>> GetCatalogModels();
+        public Task ImportCatalog(IFormFile zipFile);
     }
 }

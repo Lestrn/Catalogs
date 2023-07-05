@@ -16,7 +16,11 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index(string route = "")
     {
-        CatalogDTO catalogModel = await _catalogService.GetCatalogDTOFromRoute(route);
+        CatalogDTO? catalogModel = await _catalogService.GetCatalogDTOFromRoute(route);
+        if(catalogModel == null)
+        {
+            return RedirectToAction("Index", "Home");
+        }
         return View(catalogModel);
     }
    
@@ -24,6 +28,19 @@ public class HomeController : Controller
     {
         await _catalogService.FillWithDefaultCatalogs();
         return RedirectToAction("Index", "Home");
+    }
+    public async Task<IActionResult> ImportCatalog(IFormFile zipFile)
+    {
+        try
+        {
+            await _catalogService.ImportCatalog(zipFile);
+        }
+        catch 
+        {
+            return RedirectToAction("Index", "Home");
+        }
+        return RedirectToAction("Index", "Home");
+
     }
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
