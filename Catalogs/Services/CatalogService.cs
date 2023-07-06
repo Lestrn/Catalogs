@@ -129,7 +129,7 @@ namespace Catalogs.Services
                 Directory.Delete(extractionPath, true);
             }
         }
-        public async Task<byte[]> DownloadCatalog(string catalogName)
+        public Task<byte[]> DownloadCatalog(string catalogName)
         {
             List<CatalogModel> ctgModels = _catalogRepository.Context.Catalog.Where(ctg => ctg.CatalogRoute.StartsWith($"\\{catalogName}")).ToList();
             // Path to the folder you want to download
@@ -159,7 +159,7 @@ namespace Catalogs.Services
             System.IO.File.Delete(zipFilePath);
 
             // Return the ZIP archive as a downloadable file
-            return fileBytes;
+            return Task.FromResult(fileBytes);
         }
     }
 }
